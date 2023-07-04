@@ -4,34 +4,33 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
-- main
+- master
 
-pool:
-  vmImage: windows-latest
-strategy:
-  matrix:
-    Python37:
-      python.version: '3.7'
+jobs:
 
-steps:
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '$(python.version)'
-    displayName: 'Use Python $(python.version)'
+- job: 'Test'
+  pool:
+    vmImage: 'windows-latest'
+  strategy:
+    matrix:
+      Python37:
+        python.version: '3.7'
+    maxParallel: 1
 
-- script: |
-  python -m pip install --upgrade pip
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '$(python.version)'
+      architecture: 'x64'
+  
+  - script: pip install robotframework robotframework-seleniumlibrary && npm install chromedriver
+    displayName: 'Install dependencies'
 
-- script: |
-  pip install robotframework robotframework-seleniumlibrary && npm install chromedriver
-  displayName: 'Install dependencies'
-
-- powershell:
-  robot --pythonpath . TestCases.robot
-  displayName: 'Run robot tests'
-- task: PublishTestResults@2
-  inputs:
-     testResultsFiles: outputxunit.xml
-     searchFolder: 'D:\a\1\s\'
-  condition: succeededOrFailed()
-  displayName: 'Publish Test Results outputxunit.xml'
+  - powershell: robot --pythonpath . -x outputxunit.xml TestCases.robot
+    displayName: 'Run Robot Scripts'
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFiles: outputxunit.xml
+      searchFolder: 'D:\a\1\s\'
+      condition: succeededOrFailed()
+      displayName: 'Publish Test Results outputxunit.xml'
