@@ -28,7 +28,8 @@ jobs:
 
   - powershell:
     robot --pythonpath . -x outputxunit.xml ex3/e
-    displayName: 'Run robot tests'
+    displayName:  'Run robot tests'
+    
   - task: PublishTestResults@2
     inputs:
       testResultsFiles: outputxunit.xml
